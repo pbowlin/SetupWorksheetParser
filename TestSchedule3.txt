@@ -1,0 +1,55 @@
+University of Pennsylvania, Perelman School of ,Setup Worksheet
+
+AC 0103*,Anatomy-Chemistry
+Date,Res Start,Evt Start,Evt End,Res End,Event,Setup / Event Type,Group,Status,EC,Res ID    Book ID
+10/25/2019,1:45 PM,2:00 PM,2:30 PM,2:45 PM,TEST EVENT TECH AND RUNNER,Boardroom Style (9),Organizational Effectiveness,Confirmed,EO,54281
+Meeting - Administrative,Platt, Patrizia Salani 215-573-0693, ,276117
+MTP Equipment
+1,Computer Fixed in Space - PC
+1,LCD Projector - Fixed in Space
+MTP Tech - Setup from 1:45 PM to 2:00 PM
+1,MTP Tech
+MTP Tech - Takedown from 2:30 PM to 2:45 PM
+1,MTP Tech - Runner
+10/24/2019 10:37 AM PDB,Page 1 of 128
+University of Pennsylvania, Perelman School of ,Setup Worksheet
+
+AC 0104*,Anatomy-Chemistry
+Date,Res Start,Evt Start,Evt End,Res End,Event,Setup / Event Type,Group,Status,EC,Res ID    Book ID
+10/25/2019,9:15 AM,9:45 AM,11:00 AM,11:30 AM,TEST EVENT TECHS ONLY,Hollow Square Style (10),Global Health Programs,Confirmed,CW,55820
+Meeting - Research,GASTINGER, AMY R 215-573-8410, ,281033
+AV Rental Services - Assistance Only (10) from 9:45 AM to 11:00 AM
+1,Video Conference Unit - Web
+MTP Equipment
+1,LCD Projector - Fixed in Space
+1,Computer Fixed in Space - PC
+I would like to have a Blue Jeans or a Skype conference call. 
+MTP Equipment
+1,Telephone Conference Unit - Fixed in Space
+MTP Tech - Setup from 9:15 AM to 9:45 AM
+1,MTP Tech - AVRC
+MTP Tech - Takedown from 11:00 AM to 11:30 AM
+1,MTP Tech - AVRC
+10/24/2019 10:37 AM PDB,Page 2 of 128
+University of Pennsylvania, Perelman School of ,Setup Worksheet
+
+AC 0105*,Anatomy-Chemistry
+Date,Res Start,Evt Start,Evt End,Res End,Event,Setup / Event Type,Group,Status,EC,Res ID    Book ID
+10/25/2019,1:45 PM,2:00 PM,2:30 PM,2:45 PM,TEST EVENT RUNNERS ONLY,Boardroom Style (9),Organizational Effectiveness,Confirmed,EO,54281
+Meeting - Administrative,Platt, Patrizia Salani 215-573-0693, ,276117
+MTP Equipment
+1,Computer Fixed in Space - PC
+1,LCD Projector - Fixed in Space
+MTP Tech - Setup from 1:45 PM to 2:00 PM
+1,MTP Tech - Runner
+MTP Tech - Takedown from 2:30 PM to 2:45 PM
+1,MTP Tech - Runner
+10/24/2019 10:37 AM PDB,Page 3 of 128
+University of Pennsylvania, Perelman School of ,Setup Worksheet
+
+AC 0106*,Anatomy-Chemistry
+Date,Res Start,Evt Start,Evt End,Res End,Event,Setup / Event Type,Group,Status,EC,Res ID    Book ID
+10/25/2019,9:15 AM,9:45 AM,11:00 AM,11:30 AM,TEST EVENT NO TECHS,Hollow Square Style (10),Global Health Programs,Confirmed,CW,55820
+Meeting - Research,GASTINGER, AMY R 215-573-8410, ,281033
+10/24/2019 10:37 AM PDB,Page 4 of 128
+University of Pennsylvania, Perelman School of ,Setup Worksheet

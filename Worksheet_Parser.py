@@ -1,0 +1,273 @@
+from Page import Page
+from Event import Event
+import copy
+import re
+import PyPDF2
+
+#####################
+## Need to deal with scenario when there is basically a blank page
+## UPDATE: Scenario is automatically dealt with b/c there is always a footer at the bottom of each page so the code will work as is.
+#####################
+print('Opening text file for parsing...')
+file = open("Setup Worksheet.txt", "r")
+raw_text = file.readlines()
+
+print('Parsing worksheet pages...')
+# This array stores the page number that is associated with every line in the raw text file
+page_numbers_of_raw_lines = [None] * len(raw_text)
+page_numbers_of_raw_lines[0] = 0
+page_numbers_of_raw_lines[1] = 0
+
+pages = []
+current_page_raw_lines = []
+current_page_num = 1
+for line in range(2,len(raw_text)):
+    ## Flow: Check for new line, if it is then create a new page with raw_text
+    ## empty raw_text array, increment page counter
+    ## What if the next page doesn't start with a space up top
+    	## Could happen when the next page starts with a new event (in which case the top line is a d,t,t,t string)
+    	## Could happen when the next page starts with the continuation of the previous event (in which case the top line is Date, Res Start, Evt start, etc)
+    		## So just check for both the above cases every time? Will that work?
+
+    page_numbers_of_raw_lines[line] = current_page_num
+
+    if not raw_text[line].strip() or line == len(raw_text)-1:
+    	# We have now stored all the raw text of a single page
+    	# First check to see if the page does not start with a room/building at the top:
+    	date_and_event_times_string = re.match('\\d{1,2}/\\d{1,2}/\\d{4},\\d{1,2}:\\d{1,2} (A|P)M,\\d{1,2}:\\d{1,2} (A|P)M,\\d{1,2}:\\d{1,2} (A|P)M,\\d{1,2}:\\d{1,2} (A|P)M', current_page_raw_lines[0])
+    	date_and_event_times_header = re.match('Date,Res Start,Evt Start,Evt End,Res End', current_page_raw_lines[0])
+
+    	if (date_and_event_times_string or date_and_event_times_header):
+    		# The page did not start with a space, so go to the previous page and use that space
+    		space = pages[-1].space
+    	else:
+    		space = current_page_raw_lines[0]
+
+    	page = Page(copy.deepcopy(current_page_raw_lines), current_page_num, space)
+    	current_page_num += 1
+    	current_page_raw_lines.clear()
+    	pages.append(page)
+    else:
+    	current_page_raw_lines.append(raw_text[line])
+
+# Comment block for testing page parse worked as expected
+	# print('page info: ')
+	# print(pages[0].room)
+	# print(pages[0].building)
+	# print(pages[0].page_number)
+
+	# print('line 170 should be on page 9:')
+	# print(page_numbers_of_raw_lines[178])
+
+	# print(raw_text[178])
+
+	# print("No header page:")
+	# print(pages[-4].space)
+	# print(pages[-4].raw_text)
+
+	# for p in pages:
+	# 	print('-----------------------')
+	# 	print(p.raw_text[0])
+	# 	print(p.raw_text[1])
+	# 	print(p.raw_text[2])
+
+	# print(len(raw_text))
+	# print(raw_text[482])
+	# print(raw_text[483])
+	# print(raw_text[483].strip())
+	# print("+++++++++++++")
+
+
+	# print("page:")
+	# print(pages[3])
+
+	# print("page raw:")
+	# print(pages[3].raw_text)
+
+	# print("page number:")
+	# print(pages[3].page_number)
+
+	# print("page raw lines:")
+	# for line in pages[-2].raw_text:
+	# 	print(line)
+
+
+print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+
+print('Parsing worksheet events...')
+# Now iterate through the raw text again and extract event information
+current_event_raw_lines = []
+event_start_line = 4
+current_event_raw_lines.append(raw_text[event_start_line])
+for line in range(event_start_line + 1,len(raw_text)):
+	event_start_tag = re.match('\\d{1,2}/\\d{1,2}/\\d{4},\\d{1,2}:\\d{1,2} (A|P)M,\\d{1,2}:\\d{1,2} (A|P)M,\\d{1,2}:\\d{1,2} (A|P)M,\\d{1,2}:\\d{1,2} (A|P)M', raw_text[line])
+	if event_start_tag or line == len(raw_text) - 1:
+		# We are at the start of the next event, so take all the copied info for the current event and create and create a new event with it.
+
+		# First figure out if the new event is at the top of a new page -- this affects the previous event's end line (which affects the pages that event is on)
+		if re.match('Date,Res Start,Evt Start,Evt End,Res End', raw_text[line - 1]):
+			# New event is at the start of the page (in the typical format with the full page header)
+			event_end_line = line - 3
+		else:
+			# New event is either in the middle of a page, or it is at the start of a new page with the atpycal header that doesn't have the
+			# building/space or the "Date, res start, event start, etc" lines at the top.
+			# In the second case its fine to just subtract one as well, because that will bring us to the page break blank line, which is part of the previous page.
+			event_end_line = line - 1
+
+		building = pages[page_numbers_of_raw_lines[event_start_line]-1].building
+		room = pages[page_numbers_of_raw_lines[event_start_line]-1].room
+		event = Event(copy.deepcopy(current_event_raw_lines), building, room)
+
+		#Add the new event to its corresponding page's list of events (single events can span multiple pages)
+		num_pages = page_numbers_of_raw_lines[event_end_line] - page_numbers_of_raw_lines[event_start_line]
+		for page_range in range(num_pages + 1):
+			pages[page_numbers_of_raw_lines[event_start_line] - 1 + page_range].events.append(event)
+
+		current_event_raw_lines.clear()
+		event_start_line = line
+
+
+	current_event_raw_lines.append(raw_text[line])
+
+print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+
+print('Marking pages with techs/runners/flags')
+for page in pages:
+	page.check_for_techs_and_runners_and_flags()
+
+# Comment block for testing that events are properly assigned to pages
+	# print('test events on page: ')
+
+	# counter = 0
+	# for page in pages:
+	# 	counter += 1
+	# 	print(f'Page number : {counter}, events: {len(page.events)} ')
+
+	# print(pages[-2].events[0].raw_text)
+
+	# for event in pages[-2].events:
+	# 	print('-----------------------------')
+	# 	print(event.raw_text)
+
+# Comment block for testing line stripping and Regex
+	# current_page_num = 1
+	# for line in range(2,len(raw_text)-1):
+	# 	if not raw_text[line].strip():
+	# 		current_page_num += 1
+
+	# test = raw_text[4].split(",")
+	# for x in test:
+	# 	print(x)
+
+	# test = raw_text[13].split(",")
+	# for x in test:
+	# 	print(x)
+
+
+	# m = re.match('\\d{1,2}/\\d{1,2}/\\d{4}', '01/13/2009,12/1/2019, hjdkhfjkds, 3/09/2013')
+	# if m:
+	# 	print(m.group())
+
+	# # Match on a string with Date,time,time,time,time  --- Which will correspond to the date, SU, start, end, BD of a single event.
+	# m = re.match('\\d{1,2}/\\d{1,2}/\\d{4},\\d{1,2}:\\d{1,2} (A|P)M,\\d{1,2}:\\d{1,2} (A|P)M,\\d{1,2}:\\d{1,2} (A|P)M,\\d{1,2}:\\d{1,2} (A|P)M', raw_text[4])
+	# if m:
+	# 	print(m.group())
+
+# Comment Block for testing event info parsing works correctly.
+	# print(pages[0].events[0].building)
+	# print(pages[0].events[0].room)
+	# print(pages[0].events[0].date)
+	# print(pages[0].events[0].reservation_start)
+	# print(pages[0].events[0].event_start)
+	# print(pages[0].events[0].event_end)
+	# print(pages[0].events[0].reservation_end)
+	# print(pages[0].events[0].event_title)
+
+	# for page in pages:
+	# 	page.check_for_keep_or_duplicate()
+	# 	print(page.keep_page)
+	# 	print(page.duplicate_page)
+	# 	print(page.page_has_flags)
+	# 	print()
+
+
+# Now we have the entire worksheet parsed by page and event. We have marked which pages to keep, so now we must create a new PDF file with only those pages.
+# I think really what I should do is pre-organize the file by creating a new array of page numbers, then just loop through that with the PDF writer and add
+# all the pages based on those numbers.
+print('Re-ordering pages...')
+tech_event_pages = []
+main_campus_runners = []
+jmec_runners = []
+sctr_runners = []
+undetermined_runners = []
+
+for page_num in range(len(pages)):
+	current_page = pages[page_num]
+	
+	if current_page.has_tech:
+		tech_event_pages.append(page_num)
+
+	if current_page.has_runner:
+		if current_page.campus == 'Main Campus':
+			main_campus_runners.append(page_num)
+		elif current_page.campus == 'JMEC':
+			jmec_runners.append(page_num)
+		elif current_page.campus == 'SCTR':
+			sctr_runners.append(page_num)
+		else:
+			undetermined_runners.append(page_num)
+
+print('Creating final PDF...')
+undoctored_PDF = open('Setup Worksheet.pdf','rb')
+utility_PDF = open('UtilityPages.pdf','rb')
+output_PDF = open('AV Schedule.pdf','wb')
+
+worksheet_reader = PyPDF2.PdfFileReader(undoctored_PDF)
+utility_reader = PyPDF2.PdfFileReader(utility_PDF) 
+pdf_writer = PyPDF2.PdfFileWriter()
+
+# Add all pages with tech events
+for p in tech_event_pages:
+	pdf_writer.addPage(worksheet_reader.getPage(p))
+
+pdf_writer.addPage(utility_reader.getPage(0)) # Add the main campus runner header page
+
+# Add all pages with main campus runners
+for p in main_campus_runners:
+	pdf_writer.addPage(worksheet_reader.getPage(p))
+
+pdf_writer.addPage(utility_reader.getPage(1)) # Add the JMEC runner header page
+
+# Add all pages with JMEC runners
+for p in jmec_runners:
+	pdf_writer.addPage(worksheet_reader.getPage(p))
+
+pdf_writer.addPage(utility_reader.getPage(2)) # Add the SCTR runner header page
+
+# Add all pages with SCTR runners
+for p in sctr_runners:
+	pdf_writer.addPage(worksheet_reader.getPage(p))
+
+if len(undetermined_runners) > 0:
+	pdf_writer.addPage(utility_reader.getPage(3)) # Add the undetermined runners header page
+
+	# Add all pages with undetermined runners
+	for p in undetermined_runners:
+		pdf_writer.addPage(worksheet_reader.getPage(p))
+
+
+print('Writing final PDF...')
+pdf_writer.write(output_PDF) 
+
+print('Done! The formatted PDF schedule is called "AV Schedule.pdf" and is in the SetupWorksheetParser folder.')
+
+# Need to:
+	# Get event raw text from date,t,t,t string to date,t,t,t string. (inclusive, exclusive)
+	# Track raw text line numbers while doing so
+	# Match the event to the page by linking the raw text line numbers of the event to the raw text line numbers of the pages
+		# This allows me to know if an event spans multiple pages, so I can put it in both page's event lists
+	# Get the space info from the page and use it for the event
+		# This allows me not to worry about trying to extract the space info from the event raw text (difficult b/c space info comes before d,t,t,t string in an undefined way, i.e. multiple events per page/event spans multiple pages)
+	# Then use the event class to parse the rest of the info for the event.
+
+
