@@ -108,3 +108,4 @@ venv.bak/
 *.txt
 *.rtf
 !UtilityPages.pdf
+!Generated.txt
