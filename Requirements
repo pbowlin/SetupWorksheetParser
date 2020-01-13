@@ -1,0 +1,8 @@
+Requirements:
+
+Install Python 3
+https://www.python.org/downloads/
+
+
+Install Selenium and Webdrivers (Geckodriver for Firefox)
+https://selenium-python.readthedocs.io/installation.html

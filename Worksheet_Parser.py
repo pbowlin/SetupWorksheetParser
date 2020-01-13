@@ -5,9 +5,21 @@ import re
 import PyPDF2
 
 #####################
-## Need to deal with scenario when there is basically a blank page
-## UPDATE: Scenario is automatically dealt with b/c there is always a footer at the bottom of each page so the code will work as is.
+## WORKSHEET PARSER
+##
+## This program will automatically parse the "Daily Resource Meeting by Bldg & Rm" setup worksheet
+## from EMS and output a new PDF formatted in the appropriate manner for the MTP daily schedule.
+##
+## To run, it needs the worksheet to be exported as both a PDF and as a txt file and for those files
+## to be placed inside the SetupWorksheetParser folder with the rest of the program's files.
+## Those files must be named "Setup Worksheet.pdf" and "Setup Worksheet.txt" respectively, which
+## are the default names of the exports.
 #####################
+print("\n\n\n\n")
+print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+print("+              Welcome to the Worksheet Parser                 +")
+print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+
 print('Opening text file for parsing...')
 file = open("Setup Worksheet.txt", "r")
 raw_text = file.readlines()
@@ -22,33 +34,34 @@ pages = []
 current_page_raw_lines = []
 current_page_num = 1
 for line in range(2,len(raw_text)):
-    ## Flow: Check for new line, if it is then create a new page with raw_text
-    ## empty raw_text array, increment page counter
-    ## What if the next page doesn't start with a space up top
-    	## Could happen when the next page starts with a new event (in which case the top line is a d,t,t,t string)
-    	## Could happen when the next page starts with the continuation of the previous event (in which case the top line is Date, Res Start, Evt start, etc)
-    		## So just check for both the above cases every time? Will that work?
+	## Flow: Check for new line, if it is then create a new page with raw_text
+	## empty raw_text array, increment page counter
+	## What if the next page doesn't start with a space up top
+		## Could happen when the next page starts with a new event (in which case the top line is a d,t,t,t string)
+		## Could happen when the next page starts with the continuation of the previous event (in which case the top line is Date, Res Start, Evt start, etc)
+			## So just check for both the above cases every time
+	page_numbers_of_raw_lines[line] = current_page_num
 
-    page_numbers_of_raw_lines[line] = current_page_num
+	if (not raw_text[line].strip() and current_page_raw_lines[-1] == "University of Pennsylvania, Perelman School of ,Setup Worksheet\n") or line == len(raw_text)-1:
+		
+		# We have now stored all the raw text of a single page
+		# First check to see if the page does not start with a room/building at the top:
+		date_and_event_times_string = re.match('\\d{1,2}/\\d{1,2}/\\d{4},\\d{1,2}:\\d{1,2} (A|P)M,\\d{1,2}:\\d{1,2} (A|P)M,\\d{1,2}:\\d{1,2} (A|P)M,\\d{1,2}:\\d{1,2} (A|P)M', current_page_raw_lines[0])
+		date_and_event_times_header = re.match('Date,Res Start,Evt Start,Evt End,Res End', current_page_raw_lines[0])
 
-    if not raw_text[line].strip() or line == len(raw_text)-1:
-    	# We have now stored all the raw text of a single page
-    	# First check to see if the page does not start with a room/building at the top:
-    	date_and_event_times_string = re.match('\\d{1,2}/\\d{1,2}/\\d{4},\\d{1,2}:\\d{1,2} (A|P)M,\\d{1,2}:\\d{1,2} (A|P)M,\\d{1,2}:\\d{1,2} (A|P)M,\\d{1,2}:\\d{1,2} (A|P)M', current_page_raw_lines[0])
-    	date_and_event_times_header = re.match('Date,Res Start,Evt Start,Evt End,Res End', current_page_raw_lines[0])
+		if (date_and_event_times_string or date_and_event_times_header):
+			# The page did not start with a space, so go to the previous page and use that space
+			space = pages[-1].space
+		else:
+			space = current_page_raw_lines[0]
 
-    	if (date_and_event_times_string or date_and_event_times_header):
-    		# The page did not start with a space, so go to the previous page and use that space
-    		space = pages[-1].space
-    	else:
-    		space = current_page_raw_lines[0]
+		page = Page(copy.deepcopy(current_page_raw_lines), current_page_num, space)
+		current_page_num += 1
+		current_page_raw_lines.clear()
+		pages.append(page)
 
-    	page = Page(copy.deepcopy(current_page_raw_lines), current_page_num, space)
-    	current_page_num += 1
-    	current_page_raw_lines.clear()
-    	pages.append(page)
-    else:
-    	current_page_raw_lines.append(raw_text[line])
+	else:
+		current_page_raw_lines.append(raw_text[line])
 
 # Comment block for testing page parse worked as expected
 	# print('page info: ')
@@ -130,8 +143,7 @@ for line in range(event_start_line + 1,len(raw_text)):
 	current_event_raw_lines.append(raw_text[line])
 
 print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
-
-print('Marking pages with techs/runners/flags')
+print('Marking pages with techs/runners/flags...')
 for page in pages:
 	page.check_for_techs_and_runners_and_flags()
 
@@ -194,33 +206,63 @@ for page in pages:
 # Now we have the entire worksheet parsed by page and event. We have marked which pages to keep, so now we must create a new PDF file with only those pages.
 # I think really what I should do is pre-organize the file by creating a new array of page numbers, then just loop through that with the PDF writer and add
 # all the pages based on those numbers.
-print('Re-ordering pages...')
+print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+print('Re-ordering pages and creating runner list files...')
 tech_event_pages = []
 main_campus_runners = []
 jmec_runners = []
 sctr_runners = []
 undetermined_runners = []
+flagged_pages = []
+
+date_day = pages[0].events[0].date.strftime("%-d")
+date_month = pages[0].events[0].date.strftime("%B")
+date_year = pages[0].events[0].date.strftime("%Y")
+
+mc_runner_list = open('Generated Files/Main Campus Runner List.txt','w')
+mc_runner_list.write('Main Campus Runners:\n')
+mc_runner_list.write("Date: " + date_year + " " + date_month + " " + date_day + " \n")
+
+jmec_runner_list = open('Generated Files/JMEC Runner List.txt','w')
+jmec_runner_list.write('JMEC Runners:\n')
+jmec_runner_list.write("Date: " + date_year + " " + date_month + " " + date_day + " \n")
+
+sctr_runner_list = open('Generated Files/SCTR Runner List.txt','w')
+sctr_runner_list.write('SCTR Runners:\n')
+sctr_runner_list.write("Date: " + date_year + " " + date_month + " " + date_day + " \n")
 
 for page_num in range(len(pages)):
 	current_page = pages[page_num]
 	
-	if current_page.has_tech:
-		tech_event_pages.append(page_num)
+	if len(current_page.raw_text) > 2: # Eliminate "blank" pages (they are two lines cause they have only the footer on the page.)
+		if current_page.has_tech:
+			tech_event_pages.append(page_num)
 
-	if current_page.has_runner:
-		if current_page.campus == 'Main Campus':
-			main_campus_runners.append(page_num)
-		elif current_page.campus == 'JMEC':
-			jmec_runners.append(page_num)
-		elif current_page.campus == 'SCTR':
-			sctr_runners.append(page_num)
-		else:
-			undetermined_runners.append(page_num)
+		if current_page.has_runner:
+			if current_page.campus == 'Main Campus':
+				main_campus_runners.append(page_num)
+				mc_runner_list.write(current_page.room + "\n")
+			elif current_page.campus == 'JMEC':
+				jmec_runners.append(page_num)
+				jmec_runner_list.write(current_page.room + "\n")
+			elif current_page.campus == 'SCTR':
+				sctr_runners.append(page_num)
+				sctr_runner_list.write(current_page.room + "\n")
+			else:
+				undetermined_runners.append(page_num)
 
+		if current_page.has_flags:
+			flagged_pages.append(page_num)
+
+print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
 print('Creating final PDF...')
+
+date_formatted = pages[0].events[0].date.strftime("%m.%d.%y")
+output_PDF_title = date_formatted + " AV Schedule.pdf"
+
 undoctored_PDF = open('Setup Worksheet.pdf','rb')
 utility_PDF = open('UtilityPages.pdf','rb')
-output_PDF = open('AV Schedule.pdf','wb')
+output_PDF = open("Generated Files/" + output_PDF_title,'wb')
 
 worksheet_reader = PyPDF2.PdfFileReader(undoctored_PDF)
 utility_reader = PyPDF2.PdfFileReader(utility_PDF) 
@@ -255,19 +297,29 @@ if len(undetermined_runners) > 0:
 	for p in undetermined_runners:
 		pdf_writer.addPage(worksheet_reader.getPage(p))
 
+# Write the final PDF
+pdf_writer.write(output_PDF)
 
-print('Writing final PDF...')
-pdf_writer.write(output_PDF) 
+# print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+# print('Creating runner list file...')
 
-print('Done! The formatted PDF schedule is called "AV Schedule.pdf" and is in the SetupWorksheetParser folder.')
+# runner_list = open('Runner Lists.txt','w')
+# runner_list.write('Main Campus Runners:')
 
-# Need to:
-	# Get event raw text from date,t,t,t string to date,t,t,t string. (inclusive, exclusive)
-	# Track raw text line numbers while doing so
-	# Match the event to the page by linking the raw text line numbers of the event to the raw text line numbers of the pages
-		# This allows me to know if an event spans multiple pages, so I can put it in both page's event lists
-	# Get the space info from the page and use it for the event
-		# This allows me not to worry about trying to extract the space info from the event raw text (difficult b/c space info comes before d,t,t,t string in an undefined way, i.e. multiple events per page/event spans multiple pages)
-	# Then use the event class to parse the rest of the info for the event.
+# for page in pages:
+# 	for event in page.events:
+
+
+# for runner in main_campus_runners:
+# 	runner_list.write(runner)
+
+print('Done! The formatted PDF schedule is called "[Date] AV Schedule.pdf" where [Date] is the date of events in the schedule.')
+print("The file is located in the 'Generated Files' sub folder of the folder that houses all the rest of the program's files.")
+
+print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+print("+            Thanks for using the Worksheet Parser             +")
+print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+print("\n\n\n\n")
+
 
 
