@@ -241,13 +241,16 @@ for page_num in range(len(pages)):
 		if current_page.has_runner:
 			if current_page.campus == 'Main Campus':
 				main_campus_runners.append(page_num)
-				mc_runner_list.write(current_page.room + "\n")
+				for room in current_page.room:
+					mc_runner_list.write(room + "\n")
 			elif current_page.campus == 'JMEC':
 				jmec_runners.append(page_num)
-				jmec_runner_list.write(current_page.room + "\n")
+				for room in current_page.room:
+					jmec_runner_list.write(room + "\n")
 			elif current_page.campus == 'SCTR':
 				sctr_runners.append(page_num)
-				sctr_runner_list.write(current_page.room + "\n")
+				for room in current_page.room:
+					sctr_runner_list.write(room + "\n")
 			else:
 				undetermined_runners.append(page_num)
 
