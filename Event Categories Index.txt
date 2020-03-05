@@ -1,0 +1,28 @@
+Schedule Website Event Category Options:
+
+00 0.a: Control Room Operator
+01 0.b: Runner - Main Campus (AM)
+02 0.c: Runner - Main Campus (PM)
+03 0.d: Runner - Main Campus (AM and PM)
+04 0.e: Runner - SCTR and JMEC (AM)
+05 0.f: Runner - SCTR and JMEC (PM)
+06 0.g: Runner - SCTR and JMEC (AM and PM)
+07 1.a: Academic Programs
+08 1.b: Biomedical Graduate Studies
+09 1.c: CCEB
+10 1.d: Public Health
+11 1.e: BioEthics
+12 2: Research
+13 3.a: AV Rental Support
+14 3.b.i: Video Production - SOM
+15 3.b.ii: Video Production - UPHS
+16 3.b: Video Production External
+17 3: Clinical - UPHS
+18 4.a.i: AV Consulting - SOM
+19 4.a.ii: AV Consulting - UPHS
+20 5.a: MTP Administration
+21 5: Administration
+22 6. Lunch
+23 7. Out of the office
+24 8. Simulation
+25 9. Standardized Patient

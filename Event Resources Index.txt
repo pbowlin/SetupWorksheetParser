@@ -1,0 +1,14 @@
+Schedule Website Event Resource Options:
+
+00 ARS
+01 Audio Teleconference
+02 Harvey Doll
+03 Internet Connection
+04 IP Video Conference
+05 ISDN Video Conference
+06 Mediasite Recording
+07 Penn Video Network
+08 Prompter
+09 Sim Man
+10 Video Production/Post-Production
+11 Voip Teleconferencing

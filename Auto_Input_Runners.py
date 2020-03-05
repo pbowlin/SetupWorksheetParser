@@ -1,4 +1,5 @@
 from Runner_Input_Manager import Runner_Input_Manager
+from Credentials_Getter import get_credentials
 
 
 ##########################
@@ -18,10 +19,23 @@ from Runner_Input_Manager import Runner_Input_Manager
 ############
 
 
+
+
+
+
+
+##### MARCH 2ND 2020 AUTO INPUT RUNNERS PUT JMEC 501 ON MAIN CAMPUS RUNNER LIST FOR SOME REASON. MUST FIND OUT WHY
+
+
+
+
 print("\n\n\n\n")
 print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
 print("+            Welcome to the Runner Input Program               +")
 print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+
+
+username, password = get_credentials()
 
 parser_run = input('Have you already run the worksheet parser for the day in question? You must do that before running this program. (Type "y" for yes, "n" for no) ')
 
@@ -51,7 +65,7 @@ else:
 		PM_room = input('And what will be the last room the PM runner will need to close down? ')
 		PM_time = input('And at what time must that room be locked up? ')
 
-		manager = Runner_Input_Manager(runner_campus, AM_runner, AM_room, AM_time, PM_runner, PM_room, PM_time)
+		manager = Runner_Input_Manager(runner_campus, AM_runner, AM_room, AM_time, PM_runner, PM_room, PM_time, username, password)
 		manager.input_runners()
 
 print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")

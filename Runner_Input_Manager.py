@@ -3,10 +3,13 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import Select
 
+############
+## Need to make authentication work with anyone
+############
 
 class Runner_Input_Manager:
 
-	def __init__(self, runner_campus, AM_runner, AM_room, AM_time, PM_runner, PM_room, PM_time):
+	def __init__(self, runner_campus, AM_runner, AM_room, AM_time, PM_runner, PM_room, PM_time, username, password):
 		self.runner_campus = runner_campus
 		self.AM_runner = AM_runner
 		self.AM_room = AM_room
@@ -14,6 +17,9 @@ class Runner_Input_Manager:
 		self.PM_runner = PM_runner
 		self.PM_room = PM_room
 		self.PM_time = PM_time
+
+		self.username = username
+		self.password = password
 
 	def input_runners(self):
 		runners_file = open("Generated Files/" + self.runner_campus + " Runner List.txt", "r")
@@ -100,7 +106,7 @@ class Runner_Input_Manager:
 		self.driver.switch_to.alert.accept()
 
 	def load_website(self):
-		self.driver.get("https://hosting.med.upenn.edu/avs/index.php?page=runner")
+		self.driver.get(f"https://{self.username}:{self.password}@hosting.med.upenn.edu/avs/index.php?page=runner")
 
 		# Get all website elements that must be manipulated
 		spaces_list = Select(self.driver.find_element_by_name('eventRooms[]'))

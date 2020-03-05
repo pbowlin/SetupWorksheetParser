@@ -109,6 +109,7 @@ print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
 
 print('Parsing worksheet events...')
 # Now iterate through the raw text again and extract event information
+events_per_space = {}
 current_event_raw_lines = []
 event_start_line = 4
 current_event_raw_lines.append(raw_text[event_start_line])
@@ -139,8 +140,16 @@ for line in range(event_start_line + 1,len(raw_text)):
 		current_event_raw_lines.clear()
 		event_start_line = line
 
+		if event.has_tech:
+			if events_per_space.get(event.room[0]):
+				## Room is already in the dictionary so just add the new event to the rooms list of events
+				events_per_space.get(event.room[0]).append(event)
+			else: ## Room is not in the dictionary so create a new entry with this event
+				events_per_space[event.room[0]] = [event]
+
 
 	current_event_raw_lines.append(raw_text[line])
+
 
 print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
 print('Marking pages with techs/runners/flags...')
@@ -207,7 +216,7 @@ for page in pages:
 # I think really what I should do is pre-organize the file by creating a new array of page numbers, then just loop through that with the PDF writer and add
 # all the pages based on those numbers.
 print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
-print('Re-ordering pages and creating runner list files...')
+print('Re-ordering pages and creating event/runner list files...')
 tech_event_pages = []
 main_campus_runners = []
 jmec_runners = []
@@ -218,6 +227,32 @@ flagged_pages = []
 date_day = pages[0].events[0].date.strftime("%-d")
 date_month = pages[0].events[0].date.strftime("%B")
 date_year = pages[0].events[0].date.strftime("%Y")
+
+events_list_file = open('Generated Files/Events List.txt','w')
+events_list_file.write(f'Events listed by space for {date_year} {date_month} {date_day} \n')
+events_list_file.write('Note that you MUST check this file over to ensure the information in it is correct before running the auto input program. \n')
+events_list_file.write('When you have done this, delete the safety lock below and the auto input program will then be able to run. \n')
+events_list_file.write('\n')
+events_list_file.write('*** PROGRAM LOCK - AFTER CHECKING THIS FILE, DELETE THIS LINE TO ALLOW THE EVENT INPUT PROGRAM TO RUN ***\n')
+events_list_file.write('\n')
+
+for space in events_per_space:
+	print(space)
+	if len(space) >= 6 and space[:6] != "NO MTP":
+		for e in events_per_space[space]:
+			print(f'	{e.event_title}')
+			events_list_file.write(f'------------------------------------------------------------\n')
+			events_list_file.write(f'{space} \n')		
+			events_list_file.write(f'{e.event_title} \n')
+			events_list_file.write(f'	Setup Start:	{e.setup_start.strftime("%I:%M %p").lstrip("0")} \n')
+			events_list_file.write(f'	Setup End:	{e.setup_end.strftime("%I:%M %p").lstrip("0")} \n')
+			events_list_file.write(f'	Takedown Start:	{e.takedown_start.strftime("%I:%M %p").lstrip("0")} \n')
+			events_list_file.write(f'	Takedown End:	{e.takedown_end.strftime("%I:%M %p").lstrip("0")} \n')
+			events_list_file.write(f'	Event Resources: \n')
+			events_list_file.write(f'	Event Category: \n')
+			events_list_file.write(f'	Comments: ** \n')
+			# events_list_file.write(f'\n')
+
 
 mc_runner_list = open('Generated Files/Main Campus Runner List.txt','w')
 mc_runner_list.write('Main Campus Runners:\n')
@@ -236,7 +271,10 @@ for page_num in range(len(pages)):
 	
 	if len(current_page.raw_text) > 2: # Eliminate "blank" pages (they are two lines cause they have only the footer on the page.)
 		if current_page.has_tech:
-			tech_event_pages.append(page_num)
+			# print(f'"{current_page.building}"')
+			# print(len(current_page.building))
+			if current_page.building.rstrip() != "No Assignment":
+				tech_event_pages.append(page_num)
 
 		if current_page.has_runner:
 			if current_page.campus == 'Main Campus':

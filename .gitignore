@@ -109,3 +109,5 @@ venv.bak/
 *.rtf
 !UtilityPages.pdf
 !Generated.txt
+!Event Categories Index.txt
+!Event Resources Index.txt

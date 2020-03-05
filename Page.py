@@ -35,7 +35,6 @@ class Page:
 		## multiple sections of a room. i.e. JMEC 516EW will be [JMEC 516E, JMEC 516W] whereas BRB 252
 		## will be just [BRB 252]
 
-		## Need to clean JMEC 05M-AB rooms
 		if room[-1] == '*' or room[-1] == '+':
 			room = room[:-1]
 
@@ -50,17 +49,29 @@ class Page:
 					if len(room_info) == 2 and room_info[1] == 'B102AB':
 						room_info[1] = 'B102A\nRCH B102B'
 				
-				if self.building == 'Blockley Hall\n':
+				elif self.building == 'Blockley Hall\n':
 					room_info[0] = 'Blockley'
 
-				if self.building == 'John Morgan Building\n':
+				elif self.building == 'John Morgan Building\n':
 					if len(room_info) == 3 and room_info[1] == 'WOOD':
 						room_info[1] = 'Woodroom'
 						room_info = room_info[:-1]
+					elif room == 'JMB CLASS OF 62':
+						room_info = ['JMB Class of 1962']
+					elif room == 'JMB REUNION':
+						room_info = ['JMB Reunion Hall']
 
-				if self.building == 'Stemmler Hall\n':
+				elif self.building == 'Stemmler Hall\n':
 					if len(room_info) == 2 and room_info[1] == '416-417':
 						room_info[1] = '416\nSTM 417'
+
+				elif self.building == 'Biomedical Research Building\n':
+					if room == 'BRB AUD & LOBBY':
+						room_info = ['BRB Auditorium']
+
+				elif self.building == 'Clinical Research Building\n':
+					if room == 'CRB AUST AUD & LOBBY':
+						room_info = ['CRB Austrian Auditorium']
 
 			elif self.campus == 'JMEC':
 				# Handle room specific cases: 5M-A & B, 5-104
@@ -68,10 +79,16 @@ class Page:
 					room_info[1]= '5M-11 Study Lounge A'
 				elif room_info[1] == '5M-B':
 					room_info[1]= '5M-12 Study Lounge B'
-				elif room_info[1] == '05-104':
+				elif room_info[1] == '5-104':
 					room_info[1]= '5-104 Conf A'
 				elif len(room_info) == 2 and room_info[1][-2:] == 'EW':
 					room_info[1] = f"{room_info[1][:4]}\nJMEC {room_info[1][:3]}W"
+				elif room == 'JMEC LAW AUD':
+					room_info = ['Law Auditorium']
+				elif len(room_info) > 1 and room_info[1] == 'ATRIUM':
+					room_info = ['JMEC Atrium']
+				elif len(room_info) > 1 and room_info[1] == 'LIVING':
+					room_info = ['JMEC Living Room']
 
 			room = ""
 			for i in range(len(room_info)):
@@ -82,6 +99,10 @@ class Page:
 		elif self.campus == 'SCTR':
 			if room[-2:] == 'AB':
 				room = room[:-2]
+			elif room[-1:] == 'A' or room[-1:] == 'B':
+				room = room[:-1]
+			elif room == 'SCTR AUD & COMMONS':
+				room = 'SCTR Auditorium'
 
 		room = room.split('\n')
 		## If a single event spans multiple sections of a room we have cleaned it to be on two lines at this point

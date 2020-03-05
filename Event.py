@@ -1,4 +1,4 @@
-from datetime import datetime, date, time
+from datetime import datetime, date, time, timedelta
 import re
 
 class Event:
@@ -17,12 +17,19 @@ class Event:
 		self.has_tech = False
 		self.has_runner = False
 
+		self.has_setup_tech = False
+		self.has_takedown_tech = False
+		self.has_entire_event_tech = False
+
 		self.find_techs()
 
 		if self.has_runner == True:
 			extra_rooms = self.check_description_for_rooms()
 			for room in extra_rooms:
 				self.room.append(room)
+
+		if self.has_tech == True:
+			self.get_tech_setup_and_breakdown_times()
 
 		# print(f'{self.event_title} rooms: {self.room}')
 
@@ -31,10 +38,15 @@ class Event:
 		event_info = self.raw_text[0].split(",")
 		self.date = datetime.strptime(event_info[0], "%m/%d/%Y").date()
 		self.reservation_start = datetime.strptime(event_info[1], "%I:%M %p").time()
+		self.setup_start = self.reservation_start
 		self.event_start = datetime.strptime(event_info[2], "%I:%M %p").time()
+		self.setup_end = self.event_start
 		self.event_end = datetime.strptime(event_info[3], "%I:%M %p").time()
+		self.takedown_start = self.event_end
 		self.reservation_end = datetime.strptime(event_info[4], "%I:%M %p").time()
+		self.takedown_end = self.reservation_end
 		self.event_title = event_info[5]
+		self.event_category = event_info[7]
 
 	def find_techs(self):
 		# Regex to match on MTP techs, but not runners:
@@ -97,6 +109,61 @@ class Event:
 		return cleaned_rooms
 
 
+	def get_tech_setup_and_breakdown_times(self):
+		all_found_times = []
 
+		for line_num in range(len(self.raw_text)):
+			if re.match('MTP Tech - Setup',self.raw_text[line_num]):
+				self.has_setup_tech = True
+				from_time , to_time = self.extract_times_from_text(line_num, all_found_times)
+			if re.match('MTP Tech - Takedown',self.raw_text[line_num]):
+				self.has_takedown_tech = True
+				from_time , to_time = self.extract_times_from_text(line_num, all_found_times)
+			if re.match('MTP Tech - Entire',self.raw_text[line_num]):
+				self.has_entire_event_tech = True
+				from_time , to_time = self.extract_times_from_text(line_num, all_found_times)
+
+		from_time = min(all_found_times)
+		to_time = max(all_found_times)
+
+		########## STILL HAVE LOTS OF WORK TO DO TO MAKE THIS RIGHT WITH EVENT TIME
+		########## FOR INSTANCE, CHECK 02/10/20 BRB AUD EVENT, AS OF NOW EVENT END IS AFTER TAKEDOWN END (NOT GOOD!!)
+
+		if self.has_setup_tech or self.has_entire_event_tech:
+			self.setup_start = from_time
+		# if to_time != datetime.strptime('8:00 AM', "%I:%M %p").time():
+		# 	self.event_start = to_time
+		if abs(timedelta(hours = self.event_start.hour, minutes = self.event_start.minute) - timedelta(hours = from_time.hour, minutes = from_time.minute)) < timedelta(minutes = 30):
+			if self.event_start.minute - 30 < 0:
+				new_minutes = 30 + (self.event_start.minute)
+				self.setup_start = self.event_end.replace(hour = self.event_start.hour - 1, minute = new_minutes)
+			else:
+				self.setup_start = self.event_start.replace(minute = self.event_start.minute - 30)
+
+		if self.has_takedown_tech or self.has_entire_event_tech:
+			self.takedown_end = to_time
+		# if from_time != datetime.strptime('5:00 PM', "%I:%M %p").time():
+		# 	self.event_end = from_time
+		if abs(timedelta(hours = to_time.hour, minutes = to_time.minute) - timedelta(hours = self.event_end.hour, minutes = self.event_end.minute)) < timedelta(minutes = 30):
+			if self.event_end.minute + 30 > 59:
+				new_minutes = 30 - (60 - self.event_end.minute)
+				self.takedown_end = self.event_end.replace(hour = self.event_end.hour + 1, minute = new_minutes)
+			else:
+				self.takedown_end = self.event_end.replace(minute = self.event_end.minute + 30)
+
+
+		print('@@@@@@@@@@@@@@@@@')
+		print(self.room[0])
+		print(self.event_title)
+		print(f'Res start: {self.reservation_start.strftime("%I:%M %p")} su start: {self.setup_start.strftime("%I:%M %p")} ev start: {self.event_start.strftime("%I:%M %p")} ev end: {self.event_end.strftime("%I:%M %p")} td end: {self.takedown_end.strftime("%I:%M %p")} res end: {self.reservation_end.strftime("%I:%M %p")}')
+		print('@@@@@@@@@@@@@@@@@\n\n')
+
+	def extract_times_from_text(self, line_num, all_found_times):
+		times = self.raw_text[line_num].split(' from ')[1].split(' to ')
+		from_time = datetime.strptime(times[0], "%I:%M %p").time()
+		to_time = datetime.strptime(times[1][:-1], "%I:%M %p").time()
+
+		all_found_times.extend([from_time,to_time])
+		return from_time, to_time
 
 
