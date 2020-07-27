@@ -231,9 +231,9 @@ date_year = pages[0].events[0].date.strftime("%Y")
 events_list_file = open('Generated Files/Events List.txt','w')
 events_list_file.write(f'Events listed by space for {date_year} {date_month} {date_day} \n')
 events_list_file.write('Note that you MUST check this file over to ensure the information in it is correct before running the auto input program. \n')
-events_list_file.write('When you have done this, delete the safety lock below and the auto input program will then be able to run. \n')
-events_list_file.write('\n')
-events_list_file.write('*** PROGRAM LOCK - AFTER CHECKING THIS FILE, DELETE THIS LINE TO ALLOW THE EVENT INPUT PROGRAM TO RUN ***\n')
+# events_list_file.write('When you have done this, delete the safety lock below and the auto input program will then be able to run. \n')
+# events_list_file.write('\n')
+# events_list_file.write('*** PROGRAM LOCK - AFTER CHECKING THIS FILE, DELETE THIS LINE TO ALLOW THE EVENT INPUT PROGRAM TO RUN ***\n')
 events_list_file.write('\n')
 
 for space in events_per_space:
@@ -250,7 +250,8 @@ for space in events_per_space:
 			events_list_file.write(f'	Takedown End:	{e.takedown_end.strftime("%I:%M %p").lstrip("0")} \n')
 			events_list_file.write(f'	Event Resources: \n')
 			events_list_file.write(f'	Event Category: \n')
-			events_list_file.write(f'	Comments: ** \n')
+			events_list_file.write(f'	Comments: ** {e.comment} \n')
+			events_list_file.write(f'	Event Reviewed: No \n')
 			# events_list_file.write(f'\n')
 
 

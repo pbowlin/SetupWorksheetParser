@@ -2,6 +2,7 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import Select
+import time
 
 ############
 ## Need to make authentication work with anyone
@@ -38,7 +39,8 @@ class Runner_Input_Manager:
 		room_list = self.get_room_list(runners)
 
 		self.input_first_room_with_comment(room_list[0],year, month, day)
-		self.input_remaining_runner_rooms(room_list[1:], year, month, day)
+		if len(room_list) > 1:
+			self.input_remaining_runner_rooms(room_list[1:], year, month, day)
 
 		print('Closing driver')
 		self.driver.quit()
@@ -83,6 +85,7 @@ class Runner_Input_Manager:
 
 		self.driver.find_element_by_name('Submit').click()
 		self.driver.switch_to.alert.accept()
+		time.sleep(1)
 
 	def input_remaining_runner_rooms(self, room_list, year, month, day):
 		spaces_list, year_dropdown, month_dropdown, day_dropdown, category_dropdown, technicians_list, comments_box = self.load_website()
@@ -104,6 +107,7 @@ class Runner_Input_Manager:
 
 		self.driver.find_element_by_name('Submit').click()
 		self.driver.switch_to.alert.accept()
+		time.sleep(1)
 
 	def load_website(self):
 		self.driver.get(f"https://{self.username}:{self.password}@hosting.med.upenn.edu/avs/index.php?page=runner")

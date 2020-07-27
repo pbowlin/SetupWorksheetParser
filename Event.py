@@ -47,6 +47,14 @@ class Event:
 		self.takedown_end = self.reservation_end
 		self.event_title = event_info[5]
 		self.event_category = event_info[7]
+		self.comment = ""
+
+		if self.building == 'AV Rental Center\n':
+			self.comment = f'Location: {self.room[0][5:]}'
+			self.room = ['Rental Requests']
+
+			print(self.comment)
+			print(self.room)
 
 	def find_techs(self):
 		# Regex to match on MTP techs, but not runners:

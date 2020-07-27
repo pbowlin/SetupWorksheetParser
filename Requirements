@@ -6,3 +6,8 @@ https://www.python.org/downloads/
 
 Install Selenium and Webdrivers (Geckodriver for Firefox)
 https://selenium-python.readthedocs.io/installation.html
+
+For GUI PDF Display:
+Ghostscript: brew install ghostscript
+ImageMagick: brew install imagemagick
+Wand: pip3 install Wand

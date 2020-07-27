@@ -3,19 +3,22 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import Select
 import re
+import time
 
-#######
-# Need to change authentication to work with anyone
-#######
 
 class Events_Input_Manager:
 
-	def __init__(self, raw_text, username, password):
-		self.raw_text = raw_text
+	def __init__(self, filepath, username, password):
+
+		events_file = open(filepath, "r")
+		self.raw_text = events_file.readlines()
+
 		self.username = username
 		self.password = password
-		self.num_events, self.event_start_line = self.count_events(raw_text)
-		self.num_lines_per_event = 10
+		self.num_events, self.event_start_line = self.count_events(self.raw_text)
+		self.num_lines_per_event = 11
+
+		events_file.close()
 
 	def input_events(self):
 	
@@ -52,13 +55,15 @@ class Events_Input_Manager:
 
 			category_dropdown.select_by_visible_text(self.select_options(category_options, event_category))
 			for resource in event_resources:
-				resource_list.select_by_visible_text(self.select_options(resources_options, resource))
+				if resource != '':
+					resource_list.select_by_visible_text(self.select_options(resources_options, resource))
 
 			if comment != "**":
 				comments_box.send_keys(comment)
 
 			self.driver.find_element_by_name('Submit').click()
 			self.driver.switch_to.alert.accept()
+			time.sleep(1)
 
 		print('Closing driver')
 		self.driver.quit()

@@ -1,6 +1,6 @@
-from Events_Input_Manager import Events_Input_Manager
-from Credentials_Getter import get_credentials
-from Event_Checker_GUI import Event_Checker_GUI
+from Supervisor_Support_Input_Manager import Supervisor_Support_Input_Manager
+from Credentials_Getter_COVID import get_credentials
+import csv
 
 
 print("\n\n\n\n")
@@ -10,20 +10,13 @@ print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
 
 username, password = get_credentials()
 
-events_list_filepath = "Generated Files/Events List.txt"
+with open('SupervisorReport.csv', encoding='latin-1') as file:
+	data = csv.DictReader(file)
 
-# events_file = open("Generated Files/Events List.txt", "r")
-# events_raw_text = events_file.readlines()
-
-GUI = Event_Checker_GUI(events_list_filepath)
-GUI.run_checker_GUI()
-
-if not GUI.closed_with_x:
-	GUI.follow_up_event_checker_GUI()
-
-if GUI.run_event_input:
-	manager = Events_Input_Manager(events_list_filepath, username, password)
+	manager = Supervisor_Support_Input_Manager(data, username, password)
 	manager.input_events()
+
+	
 
 
 print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
