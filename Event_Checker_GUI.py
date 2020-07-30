@@ -1,14 +1,23 @@
 import tkinter as tk
 from tkinter import messagebox
+from tkinter import ttk
+from selenium import webdriver
+from selenium.webdriver.firefox.options import Options
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.support.ui import Select
+# import time
 
 
 class Event_Checker_GUI:
 
-	def __init__(self, filepath):
+	def __init__(self, filepath, username, password):
 
 		events_file = open(filepath, "r")
 		self.raw_text = events_file.readlines()
 		events_file.close()
+
+		self.username = username
+		self.password = password
 
 		self.HEIGHT = 1200
 		self.WIDTH = 800
@@ -64,8 +73,45 @@ class Event_Checker_GUI:
 		root = tk.Tk()
 		root.title('Event Checker')
 
+		def autocomplete_form(event):
+			# get text from entry
+			
+			value = event.widget.get()
+			value = value.strip().lower()
+			
+			# get data from test_list
+			if value == '':
+				data = room_options
+			else:
+				data = []
+				for item in room_options:
+					if value in item.lower():
+						data.append(item)                
+
+			# update data in listbox
+			listbox_update(data)
+
+		def listbox_update(data):
+			# delete previous data
+			room_autocomplete.delete(0, 'end')
+			
+			# sorting data 
+			# data = sorted(data, key=str.lower)
+
+			# put new data
+			for item in data:
+				room_autocomplete.insert('end', item)
+
+		def on_select(event):
+			# display element selected on list
+			print('(event) previous:', event.widget.get('active'))
+			print('(event)  current:', event.widget.get(event.widget.curselection()))
+			print('---')
+			room_name.set(event.widget.get(event.widget.curselection()))
+			room_autocomplete_frame.place_forget()
+
 		def close_with_x():
-			if messagebox.askokcancel("Quit", "Would you like to exit the program?\n(If you do so without clicking the Save & Exit button you will lose all changes you've made.)", icon='warning'):
+			if messagebox.askokcancel("Quit", "Are you sure you'd like to exit the program?\n(If you do so without clicking the Save & Exit button at the bottom of the window then you will lose all changes you've made.)", icon='warning'):
 				self.closed_with_x = True
 				root.destroy()
 
@@ -84,13 +130,40 @@ class Event_Checker_GUI:
 		room_name = tk.StringVar()
 		# room_name.set("Room goes here")
 
+		room_options = self.get_rooms_from_website()
+
 		room_label = tk.Label(info_frame, text="Room:", bg='#80a1aa', bd=5)
 		room = tk.Entry(info_frame, justify="center", textvariable=room_name, font=("Helvetica", "24", "bold"))
+		room.bind('<KeyRelease>', autocomplete_form)
+		# room = ttk.Combobox(info_frame, justify="center", value=room_options, textvariable=room_name, font=("Helvetica", "20", "bold"))
 		event_title_label = tk.Label(info_frame, text="Event Title:", bg='#80a1aa', bd=5)
-		event_title = tk.Label(info_frame, text = "Title goes here", font=("Helvetica", "20"), bg='#80a1aa', bd=5)
+		event_title = tk.Label(info_frame, text = "Title goes here", font=("Helvetica", "18"), bg='#80a1aa', bd=5)
+
+		room_autocomplete_frame = tk.Frame(info_frame, bg='#80c1ff')
+		room_autocomplete_frame.place(relwidth=0.8, relheight=0.5, relx=0.1, rely=0.4)
+
+		# scrollbar = tk.Scrollbar(room_autocomplete_frame)
+		# scrollbar.pack(side='right', fill='y')
+		# scrollbar.place(relwidth=0.1, relheight=1)
+
+		# room_autocomplete = tk.Listbox(room_autocomplete_frame, yscrollcommand=scrollbar.set)
+		room_autocomplete = tk.Listbox(room_autocomplete_frame)
+		# room_autocomplete.pack(side='left', expand=True)
+		# room_autocomplete.pack(side='left', fill='both')
+		room_autocomplete.place(relwidth=1, relheight=1)
+
+		room_autocomplete.bind('<<ListboxSelect>>', on_select)
+		listbox_update(room_options)
+
+		# room_autocomplete_frame.place_forget()
+		
+		# scrollbar.config(command=room_autocomplete.yview)
+
+		# for r in room_options:
+		# 	room_autocomplete.insert('end', r)
 
 		room_label.place(relwidth=1, relheight=.15)
-		room.place(relwidth=0.8, relheight=.4, rely=0.15, relx=0.1)
+		room.place(relwidth=0.8, relheight=0.3, relx=0.1, rely=0.15)
 		event_title_label.place(relwidth=1, relheight=.1, rely=0.6)
 		event_title.place(relwidth=1, relheight=.4, rely=0.7)
 
@@ -123,17 +196,21 @@ class Event_Checker_GUI:
 
 		time_entry_vars = [setup_time, estart_time, eend_time, takedown_time]
 
+		
+		time_options = self.generate_time_options()
+
 		# Entry fields
-		setup_entry = tk.Entry(event_time_frame, justify="center", textvariable=setup_time)
+		# setup_entry = tk.Entry(event_time_frame, justify="center", textvariable=setup_time)
+		setup_entry = ttk.Combobox(event_time_frame, justify="center", value=time_options, textvariable=setup_time)
 		setup_entry.place(relwidth=.2, relheight=.5, relx=0.04, rely=0.4)
 
-		estart_entry = tk.Entry(event_time_frame, justify="center", textvariable=estart_time)
+		estart_entry = ttk.Combobox(event_time_frame, justify="center", value=time_options, textvariable=estart_time)
 		estart_entry.place(relwidth=.2, relheight=.5, relx=0.28, rely=0.4)
 
-		eend_entry = tk.Entry(event_time_frame, justify="center", textvariable=eend_time)
+		eend_entry = ttk.Combobox(event_time_frame, justify="center", value=time_options, textvariable=eend_time)
 		eend_entry.place(relwidth=.2, relheight=.5, relx=0.52, rely=0.4)
 
-		takedown_entry = tk.Entry(event_time_frame, justify="center", textvariable=takedown_time)
+		takedown_entry = ttk.Combobox(event_time_frame, justify="center", value=time_options, textvariable=takedown_time)
 		takedown_entry.place(relwidth=.2, relheight=.5, relx=0.76, rely=0.4)
 
 
@@ -329,6 +406,47 @@ class Event_Checker_GUI:
 		# ## So we must use the lambda function because it is temporary and will redefine the function on every button press. 
 		# nextEventButton.place(relx=0.7, relheight=1, relwidth=0.3)
 		root.mainloop()
+
+	def generate_time_options(self):
+		times = []
+		
+		for hour in range(5, 24):
+			am_pm = 'AM' if hour < 12 else 'PM'
+			if hour > 12:
+				hour -= 12
+			for minute in range(0, 60, 15):
+				times.append(f'{hour}:{minute:02} {am_pm}')
+
+		times.append('12:00 AM')
+
+		return times
+
+	def get_rooms_from_website(self):
+		print("Fetching info from AVS website...")
+
+		options = Options()
+		options.headless = True
+
+		driver = webdriver.Firefox(options=options)
+		driver.implicitly_wait(1)
+
+		driver.get(f"https://{self.username}:{self.password}@hosting.med.upenn.edu/avs/index.php?page=addevent")
+		# Get all website elements that must be manipulated
+		spaces_list = Select(driver.find_element_by_name('avsRoom'))
+
+		# print("Sleep")
+		# time.sleep(1)
+		# driver.quit()
+	
+		spaces_options = []
+		for space in spaces_list.options:
+			spaces_options.append(space.text)
+
+
+		return spaces_options
+
+		
+
 
 	def change_page(self, room, title, times, resources, category, comments, reviewed, next_event):
 		event_number_modifier = 1

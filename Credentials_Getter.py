@@ -16,5 +16,7 @@ def get_credentials():
 		credentials_file.write(f"username: {username}\n")
 		credentials_file.write(f"password: {password}\n")
 
+		print("Your username and password have been saved! You can edit them at any time in the 'Credentials.txt' file located in the Generated Files folder.")
+
 	finally:
 		return username, password

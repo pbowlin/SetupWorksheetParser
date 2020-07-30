@@ -114,6 +114,9 @@ class Runner_Input_Manager:
 
 		# Get all website elements that must be manipulated
 		spaces_list = Select(self.driver.find_element_by_name('eventRooms[]'))
+		# print(spaces_list)
+		# for x in spaces_list.options:
+		# 	print(x.text)
 		year_dropdown = Select(self.driver.find_element_by_name('year'))
 		month_dropdown = Select(self.driver.find_element_by_name('month'))
 		day_dropdown = Select(self.driver.find_element_by_name('day'))

@@ -15,7 +15,7 @@ events_list_filepath = "Generated Files/Events List.txt"
 # events_file = open("Generated Files/Events List.txt", "r")
 # events_raw_text = events_file.readlines()
 
-GUI = Event_Checker_GUI(events_list_filepath)
+GUI = Event_Checker_GUI(events_list_filepath, username, password)
 GUI.run_checker_GUI()
 
 if not GUI.closed_with_x:
