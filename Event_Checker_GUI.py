@@ -593,11 +593,18 @@ class Event_Checker_GUI:
 
 			time_labels = ['setup', 'event start', 'event end', 'takedown']
 			for idx, time in enumerate(time_vars):
-				if time.get().upper() not in self.time_options:
-					messagebox.showwarning(title='Time Entry Warning', message=f'Invalid {time_labels[idx]} time entered. Please use the format HH:MM AM/PM.')
+				if time.get() not in self.time_options:
+					messagebox.showwarning(title='Time Entry Warning', message=f'Invalid {time_labels[idx]} time entered. Please use the format HH:MM AM/PM (note that capitalization of AM/PM matters).')
 					reviewed.set(0)
 					self.reviewed_checkbox['fg'] = 'red'
 					return False
+
+			valid_time, bad_time_idx = self.validate_time_sequence(time_vars)
+			if not valid_time:
+				messagebox.showwarning(title='Bad Time Sequence', message=f'Invalid sequence of times entered. The {time_labels[bad_time_idx]} time is before the {time_labels[bad_time_idx - 1]} time.')
+				reviewed.set(0)
+				self.reviewed_checkbox['fg'] = 'red'
+				return False
 
 			if category.get() == '':
 				messagebox.showwarning(title='Category Warning', message='A category must be selected before an event can be marked as reviewed.')
@@ -607,6 +614,32 @@ class Event_Checker_GUI:
 		
 		self.reviewed_checkbox['fg'] = 'green' if reviewed.get() == 1 else 'red'
 		return True
+
+	# Checks to make sure the setup time >= event start time >= event end time >= takedown time
+	def validate_time_sequence(self, times):
+		for idx, time in enumerate(times):
+			if idx > 0:
+				previous_time = self.convert_time(times[idx - 1].get())
+				current_time = self.convert_time(time.get())
+
+				if previous_time > current_time:
+					return False, idx
+
+		return True, 0
+
+
+	def convert_time(self, time):
+		time_split = time.split(":")
+		hour = int(time_split[0])
+		minute = int(time_split[1][:2])
+
+		if time_split[1][-2:] == 'PM' and hour < 12:
+			hour += 12
+		elif time_split[1][-2:] == 'AM' and hour == 12:
+			hour = 0
+
+		return hour * 100 + minute
+
 
 	def follow_up_event_checker_GUI(self):
 		root = tk.Tk()
