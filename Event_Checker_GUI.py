@@ -70,51 +70,78 @@ class Event_Checker_GUI:
 	def run_checker_GUI(self):
 		self.parse_events()
 
-		root = tk.Tk()
-		root.title('Event Checker')
-
-		def autocomplete_form(event):
+		def on_key_release(event):
 			# get text from entry
+			# room.event_generate('<Down>') # This automatically shows the list when the user types, but it loses focus on the text field so the user can't type T-T
+			users_letters = event.widget.get()
+			users_letters = users_letters.strip().lower()
+			perform_autocomplete(users_letters)
+
+		def perform_autocomplete(users_letters):
+			# get text from entry
+			# users_letters = event.widget.get()
+			# users_letters = users_letters.strip().lower()
+			print(f'user letters : {users_letters}')
 			
-			value = event.widget.get()
-			value = value.strip().lower()
-			
-			# get data from test_list
-			if value == '':
-				data = room_options
+			# get autocomplete suggestions from room_options
+			if users_letters == '':
+				suggested_rooms = self.room_options
 			else:
-				data = []
-				for item in room_options:
-					if value in item.lower():
-						data.append(item)                
+				suggested_rooms = []
+				for room in self.room_options:
+					if users_letters in room.lower():
+						suggested_rooms.append(room)                
 
 			# update data in listbox
-			listbox_update(data)
+			listbox_update(suggested_rooms)
 
-		def listbox_update(data):
+		def listbox_update(suggested_rooms):
+			print('in listbox update')
 			# delete previous data
-			room_autocomplete.delete(0, 'end')
-			
-			# sorting data 
-			# data = sorted(data, key=str.lower)
+			####### room_autocomplete.delete(0, 'end')
 
 			# put new data
-			for item in data:
-				room_autocomplete.insert('end', item)
+			####### for room in suggested_rooms:
+				####### room_autocomplete.insert('end', room)
+
+			room['value'] = suggested_rooms
 
 		def on_select(event):
+			print('in select')
+			print(event)
 			# display element selected on list
 			print('(event) previous:', event.widget.get('active'))
 			print('(event)  current:', event.widget.get(event.widget.curselection()))
 			print('---')
+			print(event.widget.curselection())
+			print(event.widget.get(event.widget.curselection()))
 			room_name.set(event.widget.get(event.widget.curselection()))
-			room_autocomplete_frame.place_forget()
+			hide_autocomplete_form(None)
+
+		def show_autocomplete_form(event):
+			print('in show')
+			print(event)
+			room_autocomplete_frame.place(relwidth=0.8, relheight=0.5, relx=0.1, rely=0.4)
+			room_autocomplete.place(relwidth=1, relheight=1)
+			# listbox_update(self.room_options)
+			perform_autocomplete(room_name.get().lower())
+
+		def hide_autocomplete_form(event):
+			print('in hide')
+			print(event)
+			# room_autocomplete.place_forget()
+			# room_autocomplete_frame.place_forget()
+			room_autocomplete.place_remove()
+			room_autocomplete_frame.place_remove()
+			root.focus()
 
 		def close_with_x():
 			if messagebox.askokcancel("Quit", "Are you sure you'd like to exit the program?\n(If you do so without clicking the Save & Exit button at the bottom of the window then you will lose all changes you've made.)", icon='warning'):
 				self.closed_with_x = True
 				root.destroy()
 
+		root = tk.Tk()
+		root.title('Event Checker')
 
 		canvas = tk.Canvas(root, height=self.HEIGHT, width=self.WIDTH)
 		canvas.pack()
@@ -130,36 +157,40 @@ class Event_Checker_GUI:
 		room_name = tk.StringVar()
 		# room_name.set("Room goes here")
 
-		room_options = self.get_rooms_from_website()
+		self.room_options = self.get_rooms_from_website()
+		displayed_options = self.room_options
 
 		room_label = tk.Label(info_frame, text="Room:", bg='#80a1aa', bd=5)
-		room = tk.Entry(info_frame, justify="center", textvariable=room_name, font=("Helvetica", "24", "bold"))
-		room.bind('<KeyRelease>', autocomplete_form)
-		# room = ttk.Combobox(info_frame, justify="center", value=room_options, textvariable=room_name, font=("Helvetica", "20", "bold"))
+		####### room = tk.Entry(info_frame, justify="center", textvariable=room_name, font=("Helvetica", "24", "bold"))
+		####### room.bind('<KeyRelease>', on_key_release)
+		####### room.bind('<FocusIn>', show_autocomplete_form)
+		####### room.bind('<FocusOut>', hide_autocomplete_form)
+		room = ttk.Combobox(info_frame, justify="center", value=displayed_options, textvariable=room_name, font=("Helvetica", "20", "bold"))
+		room.bind('<KeyRelease>', on_key_release)
 		event_title_label = tk.Label(info_frame, text="Event Title:", bg='#80a1aa', bd=5)
 		event_title = tk.Label(info_frame, text = "Title goes here", font=("Helvetica", "18"), bg='#80a1aa', bd=5)
 
-		room_autocomplete_frame = tk.Frame(info_frame, bg='#80c1ff')
-		room_autocomplete_frame.place(relwidth=0.8, relheight=0.5, relx=0.1, rely=0.4)
+		####### room_autocomplete_frame = tk.Frame(info_frame, bg='#80c1ff')
+		# room_autocomplete_frame.place(relwidth=0.8, relheight=0.5, relx=0.1, rely=0.4)
 
 		# scrollbar = tk.Scrollbar(room_autocomplete_frame)
 		# scrollbar.pack(side='right', fill='y')
 		# scrollbar.place(relwidth=0.1, relheight=1)
 
 		# room_autocomplete = tk.Listbox(room_autocomplete_frame, yscrollcommand=scrollbar.set)
-		room_autocomplete = tk.Listbox(room_autocomplete_frame)
+		####### room_autocomplete = tk.Listbox(room_autocomplete_frame)
 		# room_autocomplete.pack(side='left', expand=True)
 		# room_autocomplete.pack(side='left', fill='both')
-		room_autocomplete.place(relwidth=1, relheight=1)
+		# room_autocomplete.place(relwidth=1, relheight=1)
 
-		room_autocomplete.bind('<<ListboxSelect>>', on_select)
-		listbox_update(room_options)
+		####### room_autocomplete.bind('<<ListboxSelect>>', on_select)
+		# listbox_update(self.room_options)
 
 		# room_autocomplete_frame.place_forget()
 		
 		# scrollbar.config(command=room_autocomplete.yview)
 
-		# for r in room_options:
+		# for r in self.room_options:
 		# 	room_autocomplete.insert('end', r)
 
 		room_label.place(relwidth=1, relheight=.15)
@@ -197,20 +228,20 @@ class Event_Checker_GUI:
 		time_entry_vars = [setup_time, estart_time, eend_time, takedown_time]
 
 		
-		time_options = self.generate_time_options()
+		self.time_options = self.generate_time_options()
 
 		# Entry fields
 		# setup_entry = tk.Entry(event_time_frame, justify="center", textvariable=setup_time)
-		setup_entry = ttk.Combobox(event_time_frame, justify="center", value=time_options, textvariable=setup_time)
+		setup_entry = ttk.Combobox(event_time_frame, justify="center", value=self.time_options, textvariable=setup_time)
 		setup_entry.place(relwidth=.2, relheight=.5, relx=0.04, rely=0.4)
 
-		estart_entry = ttk.Combobox(event_time_frame, justify="center", value=time_options, textvariable=estart_time)
+		estart_entry = ttk.Combobox(event_time_frame, justify="center", value=self.time_options, textvariable=estart_time)
 		estart_entry.place(relwidth=.2, relheight=.5, relx=0.28, rely=0.4)
 
-		eend_entry = ttk.Combobox(event_time_frame, justify="center", value=time_options, textvariable=eend_time)
+		eend_entry = ttk.Combobox(event_time_frame, justify="center", value=self.time_options, textvariable=eend_time)
 		eend_entry.place(relwidth=.2, relheight=.5, relx=0.52, rely=0.4)
 
-		takedown_entry = ttk.Combobox(event_time_frame, justify="center", value=time_options, textvariable=takedown_time)
+		takedown_entry = ttk.Combobox(event_time_frame, justify="center", value=self.time_options, textvariable=takedown_time)
 		takedown_entry.place(relwidth=.2, relheight=.5, relx=0.76, rely=0.4)
 
 
@@ -377,16 +408,16 @@ class Event_Checker_GUI:
 		##########
 
 		reviewed_var = tk.IntVar()
-		self.reviewed_checkbox = tk.Checkbutton(root, text="Reviewed", variable=reviewed_var, fg='red', command=lambda:self.review_color_indicator(reviewed_var))
+		self.reviewed_checkbox = tk.Checkbutton(root, text="Reviewed", variable=reviewed_var, fg='red', command=lambda:self.check_reviewed_status(reviewed_var, category_var, clicked=True, room_name=room_name, time_vars=time_entry_vars))
 		self.reviewed_checkbox.place(relheight=.025, relwidth=0.1, relx=.45, rely=0.85)
 
-		self.prev_event_button=tk.Button(root, text='Previous Event', command=lambda: self.change_page(room_name, event_title, time_entry_vars, resource_vars, category_var, comments_var, reviewed_var, next_event=False))
+		self.prev_event_button=tk.Button(root, text='Previous Event', command=lambda: self.change_event(room_name, event_title, time_entry_vars, resource_vars, category_var, comments_var, reviewed_var, next_event=False))
 		self.prev_event_button.place(relheight=.025, relwidth=0.2, relx=0.2, rely=0.9)
 
 		self.page_indicator = tk.Label(root)
 		self.page_indicator.place(relheight=.025, relwidth=0.1, relx=.45, rely=0.9)
 
-		self.next_event_button=tk.Button(root, text='Next Event', command=lambda: self.change_page(room_name, event_title, time_entry_vars, resource_vars, category_var, comments_var, reviewed_var, next_event=True))
+		self.next_event_button=tk.Button(root, text='Next Event', command=lambda: self.change_event(room_name, event_title, time_entry_vars, resource_vars, category_var, comments_var, reviewed_var, next_event=True))
 		self.next_event_button.place(relheight=.025, relwidth=0.2, relx=0.6, rely=0.9)
 
 		save_exit_button = tk.Button(root, text='Save & Exit', command=lambda: self.save_and_exit_GUI(root, room_name, event_title, time_entry_vars, resource_vars, category_var, comments_var, reviewed_var))
@@ -448,10 +479,14 @@ class Event_Checker_GUI:
 		
 
 
-	def change_page(self, room, title, times, resources, category, comments, reviewed, next_event):
+	def change_event(self, room, title, times, resources, category, comments, reviewed, next_event):
 		event_number_modifier = 1
 		if not next_event:
 			event_number_modifier = -1
+
+		if reviewed.get() == 1:
+			if not self.check_reviewed_status(reviewed, category, clicked=True, room_name=room, time_vars=times):
+				return
 
 		self.save_current_event_details(room, title, times, resources, category, comments, reviewed)
 
@@ -478,7 +513,7 @@ class Event_Checker_GUI:
 		comments.set(self.events[self.current_event_displayed]['comments'])
 
 		reviewed.set(1 if self.events[self.current_event_displayed]['reviewed'] == "Yes" else 0)
-		self.review_color_indicator(reviewed)
+		self.check_reviewed_status(reviewed, category)
 
 		self.prev_event_button['state'] = 'disabled' if self.current_event_displayed == 0 else 'normal'
 		self.next_event_button['state'] = 'disabled' if self.current_event_displayed == len(self.events) - 1 else 'normal'
@@ -547,8 +582,31 @@ class Event_Checker_GUI:
 		events_list_file.close()
 		root.destroy()
 
-	def review_color_indicator(self, reviewed):
+	def check_reviewed_status(self, reviewed, category, clicked=False, room_name=None, time_vars=None):
+
+		if clicked:
+			if room_name.get() not in self.room_options:
+				messagebox.showwarning(title='Room Warning', message=f'Invalid room entered. The room must be an EXACT match to one of the rooms in the list (capitalization/punctuation/etc all matters).')
+				reviewed.set(0)
+				self.reviewed_checkbox['fg'] = 'red'
+				return False
+
+			time_labels = ['setup', 'event start', 'event end', 'takedown']
+			for idx, time in enumerate(time_vars):
+				if time.get().upper() not in self.time_options:
+					messagebox.showwarning(title='Time Entry Warning', message=f'Invalid {time_labels[idx]} time entered. Please use the format HH:MM AM/PM.')
+					reviewed.set(0)
+					self.reviewed_checkbox['fg'] = 'red'
+					return False
+
+			if category.get() == '':
+				messagebox.showwarning(title='Category Warning', message='A category must be selected before an event can be marked as reviewed.')
+				reviewed.set(0)
+				self.reviewed_checkbox['fg'] = 'red'
+				return False
+		
 		self.reviewed_checkbox['fg'] = 'green' if reviewed.get() == 1 else 'red'
+		return True
 
 	def follow_up_event_checker_GUI(self):
 		root = tk.Tk()
