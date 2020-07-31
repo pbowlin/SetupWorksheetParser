@@ -7,7 +7,12 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import Select
 # import time
 
+'''
+TO DO: 
+	Add a PDF display that shows the paperwork for the current event next to the form
+		the display must have its own page switchers that would allow you to toggle the pages if an event spans multiple pages
 
+''' 
 class Event_Checker_GUI:
 
 	def __init__(self, filepath, username, password):
@@ -81,7 +86,7 @@ class Event_Checker_GUI:
 			# get text from entry
 			# users_letters = event.widget.get()
 			# users_letters = users_letters.strip().lower()
-			print(f'user letters : {users_letters}')
+			# print(f'user letters : {users_letters}')
 			
 			# get autocomplete suggestions from room_options
 			if users_letters == '':
@@ -96,7 +101,7 @@ class Event_Checker_GUI:
 			listbox_update(suggested_rooms)
 
 		def listbox_update(suggested_rooms):
-			print('in listbox update')
+			# print('in listbox update')
 			# delete previous data
 			####### room_autocomplete.delete(0, 'end')
 
@@ -107,28 +112,28 @@ class Event_Checker_GUI:
 			room['value'] = suggested_rooms
 
 		def on_select(event):
-			print('in select')
-			print(event)
+			# print('in select')
+			# print(event)
 			# display element selected on list
-			print('(event) previous:', event.widget.get('active'))
-			print('(event)  current:', event.widget.get(event.widget.curselection()))
-			print('---')
-			print(event.widget.curselection())
-			print(event.widget.get(event.widget.curselection()))
+			# print('(event) previous:', event.widget.get('active'))
+			# print('(event)  current:', event.widget.get(event.widget.curselection()))
+			# print('---')
+			# print(event.widget.curselection())
+			# print(event.widget.get(event.widget.curselection()))
 			room_name.set(event.widget.get(event.widget.curselection()))
 			hide_autocomplete_form(None)
 
 		def show_autocomplete_form(event):
-			print('in show')
-			print(event)
+			# print('in show')
+			# print(event)
 			room_autocomplete_frame.place(relwidth=0.8, relheight=0.5, relx=0.1, rely=0.4)
 			room_autocomplete.place(relwidth=1, relheight=1)
 			# listbox_update(self.room_options)
 			perform_autocomplete(room_name.get().lower())
 
 		def hide_autocomplete_form(event):
-			print('in hide')
-			print(event)
+			# print('in hide')
+			# print(event)
 			# room_autocomplete.place_forget()
 			# room_autocomplete_frame.place_forget()
 			room_autocomplete.place_remove()
