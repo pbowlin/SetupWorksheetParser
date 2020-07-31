@@ -17,7 +17,7 @@ class Supervisor_Support_Input_Manager:
 		self.daily_time_keeper = {}
 		self.day_start_time = 8.0
 		self.categories = {'Academic Programs': '1.a: Academic Programs','Biomedical Graduate Studies': '1.b: Biomedical Graduate Studies','CCEB': '1.c: CCEB','Public Health': '1.d: Public Health','BioEthics': '1.e: BioEthics','Research': '2: Research','Clinical - UPHS': '3: Clinical - UPHS','MTP Administration': '5.a: MTP Administration','Administration': '5: Administration'}
-		self.names = {'RR': 'Ray Rollins', 'JL': 'Joseph Lavin', 'PB': 'Peter Bowlin', 'BA': 'Beth Albasi', 'KF': 'Kevin Flanigan','EC': 'Eric Capozzoli'}
+		self.names = {'RR': 'Ray Rollins', 'JL': 'Joseph Lavin', 'PB': 'Peter Bowlin', 'BA': 'Beth Albasi', 'KF': 'Kevin Flanigan','EC': 'Eric Capozzoli', 'TM':'Terrance Morrison', 'AO':'Abiodun Ogunleye', 'LMK':'Lady Miah Kane', 'MBB':'Michael Beon Barron', 'DR': 'Dave Randle', 'KA':'Kyle Albasi', 'SR':'Syd Redmond','MB':'Marc Beck','VT':'Victor Thomas', 'RN':'Robert Neill'}
 
 	def input_events(self):
 
