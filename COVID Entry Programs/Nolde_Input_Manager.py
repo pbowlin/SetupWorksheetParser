@@ -28,7 +28,7 @@ class Nolde_Input_Manager:
 			year, month, day, room, setup_start, setup_end, takedown_start, takedown_end, event_resources, event_category, comment = self.get_event_details(event)
 
 			print("Inputting event with details:")
-			print(f"'{idx}'")
+			print(f"CSV Row Number: {idx + 2}")
 			print(f"'{month} {day}, {year}'")
 			print(f"'{comment}'")
 			print(f"'{room}'")

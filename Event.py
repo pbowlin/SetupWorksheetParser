@@ -3,7 +3,7 @@ import re
 
 class Event:
 
-	def __init__(self, raw_text, building, room):
+	def __init__(self, raw_text, building, room, starts_on_page_num, num_pages):
 		self.raw_text = raw_text
 		self.building = building
 		self.room = room
@@ -12,6 +12,14 @@ class Event:
 		## will be just [BRB 252]. Then we can also search this specific event's descriptions in to check
 		## if the event itself spans multiple rooms (as JMEC runners so often do).
 		## i.e. [JMEC 501] might turn into [JMEC 501, JMEC 502, JMEC 503, JMEC 504] here.
+
+		self.starts_on_page_num = starts_on_page_num
+		
+		self.num_pages = num_pages
+		if num_pages > 1:
+			num_blanks = self.check_for_blank_page()
+			self.num_pages = num_pages - num_blanks
+
 		self.parse_event_info()
 
 		self.has_tech = False
@@ -32,6 +40,19 @@ class Event:
 			self.get_tech_setup_and_breakdown_times()
 
 		# print(f'{self.event_title} rooms: {self.room}')
+
+	def check_for_blank_page(self):
+		footer_idxs = []
+		num_blanks = 0
+		for idx, line in enumerate(self.raw_text):
+			if line == "University of Pennsylvania, Perelman School of ,Setup Worksheet\n":
+				footer_idxs.append(idx)
+
+		if len(footer_idxs) > 1:
+			for footer in range(1, len(footer_idxs)):
+				if footer_idxs[footer] - footer_idxs[footer - 1] <= 3:
+					num_blanks += 1
+		return num_blanks
 
 
 	def parse_event_info(self):

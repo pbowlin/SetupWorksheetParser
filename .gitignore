@@ -108,9 +108,12 @@ venv.bak/
 *.txt
 *.rtf
 *.csv
+*.zip
+*.jpg
 
 # Specific Files/Folders
 Test_Files/
+PDFImages/
 !UtilityPages.pdf
 !Generated.txt
 !Event Categories Index.txt

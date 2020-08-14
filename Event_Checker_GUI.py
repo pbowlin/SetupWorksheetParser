@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import messagebox
 from tkinter import ttk
+from PIL import ImageTk, Image
 from selenium import webdriver
 from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.common.keys import Keys
@@ -25,7 +26,7 @@ class Event_Checker_GUI:
 		self.password = password
 
 		self.HEIGHT = 1200
-		self.WIDTH = 800
+		self.WIDTH = 1900
 		self.events = []
 		self.current_event_displayed = 0
 
@@ -39,7 +40,7 @@ class Event_Checker_GUI:
 		self.run_event_input = False
 
 	def parse_events(self):
-		num_lines_per_event = 11
+		num_lines_per_event = 13
 		first_event_found = False
 		num_events = 0
 		for idx, line in enumerate(self.raw_text):
@@ -65,8 +66,10 @@ class Event_Checker_GUI:
 			category = 	self.raw_text[event_start_line + e_num * num_lines_per_event + 7][17:].strip()
 			comments = self.raw_text[event_start_line + e_num * num_lines_per_event + 8][11:].strip()
 			reviewed = self.raw_text[event_start_line + e_num * num_lines_per_event + 9][17:].strip()
+			start_page_num = int(self.raw_text[event_start_line + e_num * num_lines_per_event + 10][19:].strip())
+			num_pages = int(self.raw_text[event_start_line + e_num * num_lines_per_event + 11][18:].strip())
 
-			event_details = {"room":room, "title":title, "setup":setup, "start":e_start, "end":e_end, "takedown":takedown, "resources":resources, "category":category, "comments":comments, "reviewed": reviewed}
+			event_details = {"room":room, "title":title, "setup":setup, "start":e_start, "end":e_end, "takedown":takedown, "resources":resources, "category":category, "comments":comments, "reviewed": reviewed, "start_page_num": start_page_num, "num_pages": num_pages}
 			self.events.append(event_details)
 
 		# for e in self.events:
@@ -151,12 +154,16 @@ class Event_Checker_GUI:
 		canvas = tk.Canvas(root, height=self.HEIGHT, width=self.WIDTH)
 		canvas.pack()
 
+
+		event_data_frame = tk.Frame(root)
+		event_data_frame.place(relwidth=0.35, relheight=1)
+
 		############
 		## EVENT INFO (ROOM AND TITLE)
 		############
 
 		# font=("Helvetica", "36", "bold")
-		info_frame = tk.Frame(root, bg='#80a1aa', bd=5)
+		info_frame = tk.Frame(event_data_frame, bg='#80a1aa', bd=5)
 		info_frame.place(relwidth=0.95, relheight=0.1, relx=0.025, rely=0.0125)
 
 		room_name = tk.StringVar()
@@ -173,7 +180,7 @@ class Event_Checker_GUI:
 		room = ttk.Combobox(info_frame, justify="center", value=displayed_options, textvariable=room_name, font=("Helvetica", "20", "bold"))
 		room.bind('<KeyRelease>', on_key_release)
 		event_title_label = tk.Label(info_frame, text="Event Title:", bg='#80a1aa', bd=5)
-		event_title = tk.Label(info_frame, text = "Title goes here", font=("Helvetica", "18"), bg='#80a1aa', bd=5)
+		event_title = tk.Label(info_frame, text = "Title goes here", font=("Helvetica", "14"), bg='#80a1aa', bd=5)
 
 		####### room_autocomplete_frame = tk.Frame(info_frame, bg='#80c1ff')
 		# room_autocomplete_frame.place(relwidth=0.8, relheight=0.5, relx=0.1, rely=0.4)
@@ -206,7 +213,7 @@ class Event_Checker_GUI:
 		############
 		## EVENT TIMES
 		############
-		event_time_frame = tk.Frame(root, bg='#80c1ff')
+		event_time_frame = tk.Frame(event_data_frame, bg='#80c1ff')
 		event_time_frame.place(relwidth=0.95, relheight=0.05,relx=0.025, rely=0.125)
 
 		# Labels
@@ -269,12 +276,12 @@ class Event_Checker_GUI:
 		11 Voip Teleconferencing
 		'''
 
-		resources_title = tk.Label(root, bg='#80a1aa', text="Event Resources", font=("Helvetica", "20", "bold"))
+		resources_title = tk.Label(event_data_frame, bg='#80a1aa', text="Event Resources", font=("Helvetica", "20", "bold"))
 		resources_title.place(relheight=.03, relwidth=0.45,relx=0.025, rely=0.1875)
-		resources_title_details = tk.Label(root, bg='#80a1aa', text="(Select All Applicable Resources)")
+		resources_title_details = tk.Label(event_data_frame, bg='#80a1aa', text="(Select All Applicable Resources)")
 		resources_title_details.place(relheight=.02, relwidth=0.45,relx=0.025, rely=0.2175)
 
-		resources_frame = tk.Frame(root, bg='#80c1ff')
+		resources_frame = tk.Frame(event_data_frame, bg='#80c1ff')
 		resources_frame.place(relheight=.5, relwidth=0.45,relx=0.025, rely=0.2375)
 
 		# Variables that are bound to each checkbox
@@ -348,12 +355,12 @@ class Event_Checker_GUI:
 		25 9. Standardized Patient
 		'''
 
-		categories_title = tk.Label(root, bg='#80a1aa', text="Event Category", font=("Helvetica", "20", "bold"))
+		categories_title = tk.Label(event_data_frame, bg='#80a1aa', text="Event Category", font=("Helvetica", "20", "bold"))
 		categories_title.place(relheight=.03, relwidth=0.45,relx=0.525, rely=0.1875)
-		categories_title_details = tk.Label(root, bg='#80a1aa', text="(Select One)")
+		categories_title_details = tk.Label(event_data_frame, bg='#80a1aa', text="(Select One)")
 		categories_title_details.place(relheight=.02, relwidth=0.45,relx=0.525, rely=0.2175)
 
-		categories_frame = tk.Frame(root, bg='#80c1ff')
+		categories_frame = tk.Frame(event_data_frame, bg='#80c1ff')
 		categories_frame.place(relheight=.5, relwidth=0.45,relx=0.525, rely=0.2375)
 
 		# Variable that is bound to the selected radio button
@@ -399,7 +406,7 @@ class Event_Checker_GUI:
 		############
 		## EVENT COMMENTS
 		############
-		comments_frame = tk.Frame(root, bg='#80c1ff', bd=5)
+		comments_frame = tk.Frame(event_data_frame, bg='#80c1ff', bd=5)
 		comments_frame.place(relwidth=0.95, relheight=0.075,relx=0.025, rely=0.75)
 
 		comment_label = tk.Label(comments_frame, text="Comments:", bg='#80a1aa')
@@ -413,34 +420,57 @@ class Event_Checker_GUI:
 		##########
 
 		reviewed_var = tk.IntVar()
-		self.reviewed_checkbox = tk.Checkbutton(root, text="Reviewed", variable=reviewed_var, fg='red', command=lambda:self.check_reviewed_status(reviewed_var, category_var, clicked=True, room_name=room_name, time_vars=time_entry_vars))
-		self.reviewed_checkbox.place(relheight=.025, relwidth=0.1, relx=.45, rely=0.85)
+		self.reviewed_checkbox = tk.Checkbutton(event_data_frame, text="Reviewed", variable=reviewed_var, fg='red', command=lambda:self.check_reviewed_status(reviewed_var, category_var, clicked=True, room_name=room_name, time_vars=time_entry_vars))
+		self.reviewed_checkbox.place(relheight=.025, relwidth=0.14, relx=.43, rely=0.85)
 
-		self.prev_event_button=tk.Button(root, text='Previous Event', command=lambda: self.change_event(room_name, event_title, time_entry_vars, resource_vars, category_var, comments_var, reviewed_var, next_event=False))
-		self.prev_event_button.place(relheight=.025, relwidth=0.2, relx=0.2, rely=0.9)
+		self.prev_event_button=tk.Button(event_data_frame, text='Previous Event', command=lambda: self.change_event(room_name, event_title, time_entry_vars, resource_vars, category_var, comments_var, reviewed_var, next_event=False))
+		self.prev_event_button.place(relheight=.025, relwidth=0.2, relx=0.1, rely=0.9)
 
-		self.page_indicator = tk.Label(root)
-		self.page_indicator.place(relheight=.025, relwidth=0.1, relx=.45, rely=0.9)
+		self.event_num_indicator = tk.Label(event_data_frame)
+		self.event_num_indicator.place(relheight=.025, relwidth=0.3, relx=.35, rely=0.9)
 
-		self.next_event_button=tk.Button(root, text='Next Event', command=lambda: self.change_event(room_name, event_title, time_entry_vars, resource_vars, category_var, comments_var, reviewed_var, next_event=True))
-		self.next_event_button.place(relheight=.025, relwidth=0.2, relx=0.6, rely=0.9)
+		self.next_event_button=tk.Button(event_data_frame, text='Next Event', command=lambda: self.change_event(room_name, event_title, time_entry_vars, resource_vars, category_var, comments_var, reviewed_var, next_event=True))
+		self.next_event_button.place(relheight=.025, relwidth=0.2, relx=0.7, rely=0.9)
 
-		save_exit_button = tk.Button(root, text='Save & Exit', command=lambda: self.save_and_exit_GUI(root, room_name, event_title, time_entry_vars, resource_vars, category_var, comments_var, reviewed_var))
+		save_exit_button = tk.Button(event_data_frame, text='Save & Exit', command=lambda: self.save_and_exit_GUI(root, room_name, event_title, time_entry_vars, resource_vars, category_var, comments_var, reviewed_var))
 		save_exit_button.place(relheight=0.025, relwidth=0.2, relx=0.4, rely=0.95)
 
-		date_label = tk.Label(root, text=f'{self.date_month} {self.date_day}, {self.date_year}')
-		date_label.place(relheight=0.025, relwidth=0.2, relx=0.75, rely=0.95)
+		date_label = tk.Label(event_data_frame, text=f'{self.date_month} {self.date_day}, {self.date_year}')
+		date_label.place(relheight=0.025, relwidth=0.3, relx=0.65, rely=0.95)
+
+
+		############
+		## PDF DISPLAY (RIGHT SIDE)
+		############
+		self.IMAGE_W = 2200
+		self.IMAGE_H = 1700
+
+		pdf_display_frame = tk.Frame(root, bg='#80a1aa')
+		pdf_display_frame.place(relheight=0.8125, relwidth=0.64, relx=0.35, rely=0.0125)
+
+		self.pdf_img_label = tk.Label(pdf_display_frame, image=None)
+		self.pdf_img_label.place(relwidth=0.95, relheight=0.95, relx=0.025, rely=0.025)
+
+		pdf_buttons_frame = tk.Frame(root)
+		pdf_buttons_frame.place(relwidth=0.64, relheight=0.1875, relx=0.35, rely=0.825 )
+
+		self.prev_pdf_page_button=tk.Button(pdf_buttons_frame, text='Previous PDF Page', command=lambda: self.change_pdf_page(next_page = False))
+		self.prev_pdf_page_button.place(relheight=.14, relwidth=0.12, relx=0.25, rely=0.4125)
+
+		self.pdf_page_indicator = tk.Label(pdf_buttons_frame, text=None)
+		self.pdf_page_indicator.place(relheight=.14, relwidth=0.2, relx=.4, rely=0.4125)
+
+		self.next_pdf_page_button=tk.Button(pdf_buttons_frame, text='Next PDF Page', command=lambda: self.change_pdf_page(next_page = True))
+		self.next_pdf_page_button.place(relheight=.14, relwidth=0.12, relx=0.63, rely=0.4125)
+
+		#.2prev -> .3 -> .35label -> .65 -> .7next 
 
 		self.load_info(room_name, event_title, time_entry_vars, resource_vars, category_var, comments_var, reviewed_var)
+
+		
 		
 
 		root.protocol("WM_DELETE_WINDOW", close_with_x)
-
-		# nextEventButton=tk.Button(canvas, text='Next Event', font=40, command=lambda: self.get_next_event())
-		# ## Must use lambda function in the above code because otherwise it will run the code beforehand and then
-		# ## will not re-run the code when the button is clicked (because we passed in a function to run i.e. foo() not foo). 
-		# ## So we must use the lambda function because it is temporary and will redefine the function on every button press. 
-		# nextEventButton.place(relx=0.7, relheight=1, relwidth=0.3)
 		root.mainloop()
 
 	def generate_time_options(self):
@@ -481,13 +511,9 @@ class Event_Checker_GUI:
 
 		return spaces_options
 
-		
-
 
 	def change_event(self, room, title, times, resources, category, comments, reviewed, next_event):
-		event_number_modifier = 1
-		if not next_event:
-			event_number_modifier = -1
+		event_number_modifier = 1 if next_event else -1
 
 		if reviewed.get() == 1:
 			if not self.check_reviewed_status(reviewed, category, clicked=True, room_name=room, time_vars=times):
@@ -522,8 +548,44 @@ class Event_Checker_GUI:
 
 		self.prev_event_button['state'] = 'disabled' if self.current_event_displayed == 0 else 'normal'
 		self.next_event_button['state'] = 'disabled' if self.current_event_displayed == len(self.events) - 1 else 'normal'
-		self.page_indicator['text'] = f'Page: {self.current_event_displayed + 1}/{len(self.events)}'
+		self.event_num_indicator['text'] = f'Event: {self.current_event_displayed + 1} of {len(self.events)}'
+		#print(f'Start page: {self.events[self.current_event_displayed]['start_page_num']}')
+		self.current_PDF_page = self.events[self.current_event_displayed]['start_page_num']
+		self.load_PDF_image()
 
+		self.update_PDF_buttons_and_label()
+
+		
+	def change_pdf_page(self, next_page):
+		pdf_page_modifier = 1 if next_page else -1 
+		self.current_PDF_page += pdf_page_modifier
+
+		self.load_PDF_image()
+		self.update_PDF_buttons_and_label()
+
+	def load_PDF_image(self):
+		# This is gross but its the easiest way to find the image filename considering the PDF2Image converter dynamically adds zeros to the
+		# filename depending on the number of pages in the file, and no worksheet will ever be > 1000 pages.
+		try:
+			self.pdf_img = ImageTk.PhotoImage(Image.open(f'PDFImages/PDFImages-{self.current_PDF_page}.jpg').resize((self.IMAGE_W//2,self.IMAGE_H//2), Image.ANTIALIAS))
+		except:
+			try:
+				self.pdf_img = ImageTk.PhotoImage(Image.open(f'PDFImages/PDFImages-00{self.current_PDF_page}.jpg').resize((self.IMAGE_W//2,self.IMAGE_H//2), Image.ANTIALIAS))
+			except:
+				try:
+					self.pdf_img = ImageTk.PhotoImage(Image.open(f'PDFImages/PDFImages-0{self.current_PDF_page}.jpg').resize((self.IMAGE_W//2,self.IMAGE_H//2), Image.ANTIALIAS))
+				except:
+					print('Couldnt open PDF image')
+					pass
+		self.pdf_img_label['image'] = self.pdf_img	
+
+	
+	def update_PDF_buttons_and_label(self):
+		relative_pdf_page = self.current_PDF_page - self.events[self.current_event_displayed]['start_page_num'] + 1
+		self.pdf_page_indicator['text'] = f"Event Page: {relative_pdf_page} of {self.events[self.current_event_displayed]['num_pages']}"
+
+		self.prev_pdf_page_button['state'] = 'disabled' if relative_pdf_page == 1 else 'normal'
+		self.next_pdf_page_button['state'] = 'disabled' if relative_pdf_page == self.events[self.current_event_displayed]['num_pages'] else 'normal'
 
 	def clear_resources_and_category(self, resources, category):
 		for resource in resources:
@@ -580,6 +642,8 @@ class Event_Checker_GUI:
 			events_list_file.write(f"	Event Category: {event['category']}\n")
 			events_list_file.write(f"	Comments: {event['comments']} \n")
 			events_list_file.write(f"	Event Reviewed: {event['reviewed']} \n")
+			events_list_file.write(f"	Event Start Page: {event['start_page_num']} \n")
+			events_list_file.write(f"	Number of Pages: {event['num_pages']} \n")
 
 
 		self.all_events_reviewed = True if num_reviewed_events == len(self.events) else False

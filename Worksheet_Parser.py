@@ -130,10 +130,14 @@ for line in range(event_start_line + 1,len(raw_text)):
 
 		building = pages[page_numbers_of_raw_lines[event_start_line]-1].building
 		room = pages[page_numbers_of_raw_lines[event_start_line]-1].room
-		event = Event(copy.deepcopy(current_event_raw_lines), building, room)
+		# event = Event(copy.deepcopy(current_event_raw_lines), building, room)
+
+		# Calculate how many pages the event spans in the PDF
+		num_pages = page_numbers_of_raw_lines[event_end_line] - page_numbers_of_raw_lines[event_start_line]
+
+		event = Event(copy.deepcopy(current_event_raw_lines), building, room, page_numbers_of_raw_lines[event_start_line], num_pages + 1)
 
 		#Add the new event to its corresponding page's list of events (single events can span multiple pages)
-		num_pages = page_numbers_of_raw_lines[event_end_line] - page_numbers_of_raw_lines[event_start_line]
 		for page_range in range(num_pages + 1):
 			pages[page_numbers_of_raw_lines[event_start_line] - 1 + page_range].events.append(event)
 
@@ -236,10 +240,12 @@ events_list_file.write('Note that you MUST check this file over to ensure the in
 # events_list_file.write('*** PROGRAM LOCK - AFTER CHECKING THIS FILE, DELETE THIS LINE TO ALLOW THE EVENT INPUT PROGRAM TO RUN ***\n')
 events_list_file.write('\n')
 
-for space in events_per_space:
+current_page_in_pdf = -1
+for space_idx, space in enumerate(events_per_space):
 	print(space)
+	new_space = True
 	if len(space) >= 6 and space[:6] != "NO MTP":
-		for e in events_per_space[space]:
+		for event_idx, e in enumerate(events_per_space[space]):
 			print(f'	{e.event_title}')
 			events_list_file.write(f'------------------------------------------------------------\n')
 			events_list_file.write(f'{space} \n')		
@@ -252,6 +258,30 @@ for space in events_per_space:
 			events_list_file.write(f'	Event Category: \n')
 			events_list_file.write(f'	Comments: ** {e.comment} \n')
 			events_list_file.write(f'	Event Reviewed: No \n')
+			if new_space:
+				# Two events in different spaces can never be on the same page in the PDF
+				# Also, this case handles the first event of each new space (when event_idx = 0) implicitly.
+				current_event_start_page_in_pdf = current_page_in_pdf + 1
+				current_page_in_pdf += e.num_pages
+				new_space = False
+			else:
+				# If we're here then the space has more than 1 event in it, and we are on event # > 1
+				# We must check to see if the previous event ended on the same page that the current event starts
+				# This way we know if the two events take up the same page or if the pages are totally separate. 
+				prev_event = events_per_space[space][event_idx - 1]
+				if e.starts_on_page_num == prev_event.starts_on_page_num + prev_event.num_pages - 1:
+					# Current event starts on the same page that the previous event ended on
+					current_event_start_page_in_pdf = current_page_in_pdf
+					current_page_in_pdf += e.num_pages - 1
+				else:
+					# Current event starts on a new page
+					current_event_start_page_in_pdf = current_page_in_pdf + 1
+					current_page_in_pdf += e.num_pages
+
+			events_list_file.write(f'	Event Start Page: {current_event_start_page_in_pdf + 1} \n')
+			events_list_file.write(f'	Number of Pages: {e.num_pages} \n')
+
+
 			# events_list_file.write(f'\n')
 
 

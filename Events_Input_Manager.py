@@ -16,7 +16,7 @@ class Events_Input_Manager:
 		self.username = username
 		self.password = password
 		self.num_events, self.event_start_line = self.count_events(self.raw_text)
-		self.num_lines_per_event = 11
+		self.num_lines_per_event = 13
 
 		events_file.close()
 
